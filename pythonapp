@@ -1,0 +1,995 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QPushButton, QDialog, QMessageBox, QScrollArea, QComboBox, QHBoxLayout, QVBoxLayout, QScrollBar, QWidget, QFrame
+from PyQt5.QtGui import QIcon, QPixmap, QFont
+from PyQt5.QtCore import Qt, QSize
+import mysql.connector
+
+global username
+
+class RegisterWindow(QDialog):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
+        self.setWindowTitle("Registration")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.bg_label = QLabel(self)
+        self.bg_label.setGeometry(0, 0, 1900, 970)
+        self.bg_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(QSize(1900, 970)))
+
+        self.label_username = QLabel("Username:", self)
+        self.label_username.setGeometry(750,200, 150, 30)
+        self.label_username.setFont(QFont("Montserrat", 14))
+        self.label_username.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_username = QLineEdit(self)
+        self.entry_username.setGeometry(950,200, 240, 30)
+        self.entry_username.setFont(QFont("Montserrat", 12))
+
+        self.label_password = QLabel("Password:", self)
+        self.label_password.setGeometry(750, 270, 150, 30)
+        self.label_password.setFont(QFont("Montserrat", 14))
+        self.label_password.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_password = QLineEdit(self)
+        self.entry_password.setGeometry(950, 270, 240, 30)
+        self.entry_password.setFont(QFont("Montserrat", 12))
+        self.entry_password.setEchoMode(QLineEdit.Password)
+
+        self.label_name = QLabel("Name:", self)
+        self.label_name.setGeometry(750, 340, 150, 30)
+        self.label_name.setFont(QFont("Montserrat", 14))
+        self.label_name.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_name = QLineEdit(self)
+        self.entry_name.setGeometry(950, 340, 240, 30)
+        self.entry_name.setFont(QFont("Montserrat", 12))
+
+        self.label_phone = QLabel("Phone:", self)
+        self.label_phone.setGeometry(750, 410, 150, 30)
+        self.label_phone.setFont(QFont("Montserrat", 14))
+        self.label_phone.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_phone = QLineEdit(self)
+        self.entry_phone.setGeometry(950, 410, 240, 30)
+        self.entry_phone.setFont(QFont("Montserrat", 12))
+
+        self.label_email = QLabel("Email:", self)
+        self.label_email.setGeometry(750, 480, 150, 30)
+        self.label_email.setFont(QFont("Montserrat", 14))
+        self.label_email.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_email = QLineEdit(self)
+        self.entry_email.setGeometry(950, 480, 240, 30)
+        self.entry_email.setFont(QFont("Montserrat", 12))
+
+        self.label_city = QLabel("City:", self)
+        self.label_city.setGeometry(750, 550, 150, 30)
+        self.label_city.setFont(QFont("Montserrat", 14))
+        self.label_city.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_city = QLineEdit(self)
+        self.entry_city.setGeometry(950, 550, 240, 30)
+        self.entry_city.setFont(QFont("Montserrat", 12))
+
+        self.label_user_type = QLabel("User Type:", self)
+        self.label_user_type.setGeometry(750, 620, 150, 30)
+        self.label_user_type.setFont(QFont("Montserrat", 14))
+        self.label_user_type.setStyleSheet("font-size: 14pt; color: white")
+        self.user_type_options = ["Restaurant", "NGO", "Individual"]
+        self.entry_user_type = QComboBox(self)
+        self.entry_user_type.setGeometry(950, 620, 240, 30)
+        self.entry_user_type.setFont(QFont("Montserrat", 12))
+        self.label_user_type.setStyleSheet("font-size: 14pt; color: white")
+        self.entry_user_type.addItems(self.user_type_options)
+
+        self.button_submit = QPushButton("Register", self)
+        self.button_submit.setGeometry(950, 690, 240, 30)
+        self.button_submit.setStyleSheet("font-size: 14pt; background-color: #1E90FF; color: white; border:#1E90FF")
+        self.button_submit.clicked.connect(self.submit_registration)
+
+        self.button_back = QPushButton("Back", self)
+        self.button_back.setGeometry(950, 760, 240, 30)
+        self.button_back.setStyleSheet("font-size: 14pt; background-color: white; color: #1E90FF; border: none;")
+        self.button_back.clicked.connect(self.back_to_main)
+
+    def back_to_main(self):
+        self.close()
+        self.parent.show()
+
+    def submit_registration(self):
+        username = self.entry_username.text()
+        password = self.entry_password.text()
+        name = self.entry_name.text()
+        phone = self.entry_phone.text()
+        email = self.entry_email.text()
+        city = self.entry_city.text()
+        user_type = self.user_type_options[self.entry_user_type.currentIndex()]
+
+        try:
+            db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+
+            cursor = db.cursor()
+            query = "INSERT INTO user (username, password, name, phone_no, email_id, city, user_type) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            cursor.execute(query, (username, password, name, phone, email, city, user_type))
+            db.commit()
+
+            QMessageBox.information(self, "Success", "Registration successful!")
+
+            cursor.close()
+            db.close()
+
+        except mysql.connector.Error as error:
+            QMessageBox.critical(self, "Error", "Error registering user: " + str(error))
+
+        self.close()
+        self.parent.show()
+
+class RestaurantListWindow(QDialog):
+    def __init__(self, main_window=None):
+        super().__init__()
+        self.main_window = main_window
+        self.setWindowTitle("Restaurant List")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, 1900, 970)
+        self.background_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900, 970))
+        
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)  # Allow widget to resize with scroll area
+        self.scroll_area.setGeometry(50, 50, 1800, 820)
+        self.scroll_area.setStyleSheet("background-color: transparent;")
+
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+        
+        res = self.get_restaurants_from_database()
+        y_offset = 30  # Initial offset for element placement
+
+        for restaurant in res:
+            name = restaurant[1] if restaurant[1] else "Unknown"
+            city = restaurant[2] if restaurant[2] else "Unknown"
+
+            # Create a horizontal layout for label and button
+            row_layout = QHBoxLayout()
+            row_layout.setSpacing(10)  # Optional spacing between label and button
+
+            name_label = QLabel(f"{name}, {city}", self.widget)
+            name_label.setFont(QFont("Montserrat", 24))
+            name_label.setStyleSheet("color: white")
+            row_layout.addWidget(name_label)
+
+            view_button = QPushButton("View", self.widget)
+            view_button.setFont(QFont("Montserrat", 12))
+            view_button.setProperty('username', restaurant[0])
+            view_button.clicked.connect(lambda _, restaurant_id=restaurant[0]: self.view_restaurant(restaurant_id))
+
+            # Add button to layout **before** setting geometry
+            row_layout.addWidget(view_button)
+
+            # Set geometry for view button after addin
+            view_button.setStyleSheet("font-size: 14pt; background-color: white; color: #1E90FF; border: none;")
+
+
+            # Add the horizontal layout containing label and button to main layout
+            widget = QWidget()
+            widget.setLayout(row_layout)
+            self.layout.addWidget(widget)
+
+            y_offset += 40
+
+        self.widget.setLayout(self.layout)
+        self.scroll_area.setWidget(self.widget)  # Set widget inside scroll area
+
+        self.scrollbar = QScrollBar(Qt.Vertical, self)
+        self.scrollbar.setGeometry(1850, 50, 20, 870)
+        self.scrollbar.setPageStep(50)
+
+        self.scrollbar.valueChanged.connect(lambda value: self.scroll_area.verticalScrollBar().setValue(value)) 
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+    def view_restaurant(self, restaurant_id):
+        self.rest_window = showrestaurant(restaurant_id)
+        self.rest_window.show()  # Show the window
+        self.rest_window.finished.connect(self.restaurant_list_closed) 
+        self.close()
+
+    def get_restaurants_from_database(self):
+        try:
+            db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+
+            cursor = db.cursor()
+
+            query = "SELECT username, name, city FROM user WHERE user_type = 'Restaurant' "
+            cursor.execute(query)
+            resto = cursor.fetchall()
+
+            cursor.close()
+            db.close()
+
+            return resto
+
+        except mysql.connector.Error as error:
+            QMessageBox.critical(self, "Error", "Error connecting to MySQL server: " + str(error))
+            return []
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "An unexpected error occurred: " + str(e))
+            print("Unexpected error:", e)
+            return []
+
+    def get_restaurant_details_from_database(self, restaurant_id):
+        try:
+            db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+
+            cursor = db.cursor()
+
+            query = "SELECT name, city FROM user WHERE username = %s AND user_type = 'Restaurant'"
+            cursor.execute(query, (restaurant_id,))
+            restaurant_details = cursor.fetchone()
+
+            cursor.close()
+            db.close()
+
+            return restaurant_details
+
+        except mysql.connector.Error as error:
+            QMessageBox.critical(self, "Error", "Error connecting to MySQL server: " + str(error))
+            return None
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "An unexpected error occurred: " + str(e))
+            print("Unexpected error:", e)
+            return None
+        
+    def restaurant_list_closed(self):
+        self.show()
+        
+class showrestaurant(QDialog):
+    def __init__(self, restaurant_id):
+        super().__init__()
+        self.restaurant_id = restaurant_id
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setAttribute(Qt.WA_DeleteOnClose, False) 
+        self.init_ui()
+
+    def init_ui(self):
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6851.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, 1900, 970)
+
+        try:
+            self.db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+            self.cursor = self.db.cursor()
+        except mysql.connector.Error as err:
+            error_message = f"Database connection failed: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.close()
+
+        fields_coordinates = [(1100, 230), (1100, 380), (1100, 480), (1100, 580)]
+        info_fields = []
+
+        for i, (x, y) in enumerate(fields_coordinates):
+            field = QLineEdit(self)
+            if i == 0:  # For the first field
+                field.setGeometry(x, y, 760, 100) 
+                font = QFont("Montserrat", 30)
+            else:
+                field.setGeometry(x, y, 500, 50) 
+                font = QFont("Montserrat", 14)
+            field.setFont(font)
+            field.setReadOnly(True)
+            field.setStyleSheet("background-color: #0077B6; color: white; border: 2px solid white; border-radius: 7px;")
+            info_fields.append(field)
+        self.fetch_data(info_fields)
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+        msg_button = QPushButton("Message", self)
+        msg_button.setFont(QFont("Montserrat", 14))
+        msg_button.clicked.connect(self.close)
+        msg_button.setGeometry(1100, 680, 250, 50)
+
+    def fetch_data(self, info_fields):
+        try:
+            query = "SELECT name, city, phone_no, email_id FROM user WHERE username = %s"
+            self.cursor.execute(query, (self.restaurant_id,))
+            restaurant_info = self.cursor.fetchone()
+
+            if restaurant_info:
+                for field, value in zip(info_fields, restaurant_info):
+                    field.setText(str(value))
+            else:
+                QMessageBox.warning(self, "Warning", "Restaurant not found in the database")
+        except mysql.connector.Error as err:
+            error_message = f"Error fetching data from the database: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+        finally:
+            self.cursor.close()
+            self.db.close()
+
+class NGOListWindow(QDialog):
+    def __init__(self, main_window=None):
+        super().__init__()
+        self.main_window = main_window
+        self.setWindowTitle("NGO List")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, 1900, 970)
+        self.background_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900, 970))
+        
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)  # Allow widget to resize with scroll area
+        self.scroll_area.setGeometry(50, 50, 1800, 820)
+        self.scroll_area.setStyleSheet("background-color: transparent;")
+
+        self.widget = QWidget()
+        self.layout = QVBoxLayout(self.widget)
+        
+        res = self.get_ngos_from_database()
+        y_offset = 30  # Initial offset for element placement
+
+        for ngo in res:
+            name = ngo[1] if ngo[1] else "Unknown"
+            city = ngo[2] if ngo[2] else "Unknown"
+
+            # Create a horizontal layout for label and button
+            row_layout = QHBoxLayout()
+            row_layout.setSpacing(10)  # Optional spacing between label and button
+
+            name_label = QLabel(f"{name}, {city}", self.widget)
+            name_label.setFont(QFont("Montserrat", 24))
+            name_label.setStyleSheet("color: white")
+            row_layout.addWidget(name_label)
+
+            view_button = QPushButton("View", self.widget)
+            view_button.setFont(QFont("Montserrat", 12))
+            view_button.setProperty('username', ngo[0])
+            view_button.clicked.connect(lambda _, ngo_id=ngo[0]: self.view_ngo(ngo_id))
+
+            # Add button to layout **before** setting geometry
+            row_layout.addWidget(view_button)
+
+            # Set geometry for view button after addin
+            view_button.setStyleSheet("font-size: 14pt; background-color: white; color: #1E90FF; border: none;")
+
+
+            # Add the horizontal layout containing label and button to main layout
+            widget = QWidget()
+            widget.setLayout(row_layout)
+            self.layout.addWidget(widget)
+
+            y_offset += 40
+
+        self.widget.setLayout(self.layout)
+        self.scroll_area.setWidget(self.widget)  # Set widget inside scroll area
+
+        self.scrollbar = QScrollBar(Qt.Vertical, self)
+        self.scrollbar.setGeometry(1850, 50, 20, 870)
+        self.scrollbar.setPageStep(50)
+
+        self.scrollbar.valueChanged.connect(lambda value: self.scroll_area.verticalScrollBar().setValue(value)) 
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+    def view_ngo(self, ngo_id):
+        self.ngo_window = showngos(ngo_id)
+        self.ngo_window.show()  # Show the window
+        self.ngo_window.finished.connect(self.ngo_list_closed) 
+        self.close()
+
+    def get_ngos_from_database(self):
+        try:
+            db = mysql.connector.connect(
+                host='localhost',
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+
+            cursor = db.cursor()
+
+            query = "SELECT username, name, city FROM user WHERE user_type = 'NGO' "
+            cursor.execute(query)
+            res = cursor.fetchall()
+
+            cursor.close()
+            db.close()
+
+            return res
+
+        except mysql.connector.Error as error:
+            QMessageBox.critical(self, "Error", "Error connecting to MySQL server: " + str(error))
+            return []
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "An unexpected error occurred: " + str(e))
+            print("Unexpected error:", e)
+            return []
+
+    def adjust_scrollbar(self):
+        content_height = self.layout.sizeHint().height()
+        # Access scroll area's vertical scroll bar
+        scroll_bar = self.scroll_area.verticalScrollBar()
+        scroll_bar.setRange(0, content_height - self.scroll_area.height())
+
+
+    def ngo_list_closed(self):
+        self.show()
+        
+class showngos(QDialog):
+    def __init__(self, ngo_id):
+        super().__init__()
+        self.ngo_id = ngo_id
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setAttribute(Qt.WA_DeleteOnClose, False) 
+        self.init_ui()
+
+    def init_ui(self):
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6854.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, 1900, 970)
+
+        try:
+            self.db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+            self.cursor = self.db.cursor()
+        except mysql.connector.Error as err:
+            error_message = f"Database connection failed: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.close()
+
+        fields_coordinates = [(1100, 230), (1100, 380), (1100, 480), (1100, 580)]
+        info_fields = []
+
+        for i, (x, y) in enumerate(fields_coordinates):
+            field = QLineEdit(self)
+            if i == 0:  # For the first field
+                field.setGeometry(x, y, 760, 100) 
+                font = QFont("Montserrat", 30)
+            else:
+                field.setGeometry(x, y, 500, 50) 
+                font = QFont("Montserrat", 14)
+            field.setFont(font)
+            field.setReadOnly(True)
+            field.setStyleSheet("background-color: #0077B6; color: white; border: 2px solid white; border-radius: 7px;")
+            info_fields.append(field)
+        self.fetch_data(info_fields)
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+        msg_button = QPushButton("Message", self)
+        msg_button.setFont(QFont("Montserrat", 14))
+        msg_button.clicked.connect(self.close)
+        msg_button.setGeometry(1100, 680, 250, 50)
+
+    def fetch_data(self, info_fields):
+        try:
+            query = "SELECT name, city, phone_no, email_id FROM user WHERE username = %s"
+            self.cursor.execute(query, (self.ngo_id,))
+            ngo_info = self.cursor.fetchone()
+
+            if ngo_info:
+                for field, value in zip(info_fields, ngo_info):
+                    field.setText(str(value))
+            else:
+                QMessageBox.warning(self, "Warning", "Restaurant not found in the database")
+        except mysql.connector.Error as err:
+            error_message = f"Error fetching data from the database: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+        finally:
+            self.cursor.close()
+            self.db.close()
+
+class showngo(QDialog):
+    def __init__(self, username):
+        super().__init__()
+        self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6854.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, self.width(), self.height())
+
+        try:
+            self.db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+            self.cursor = self.db.cursor()
+        except mysql.connector.Error as err:
+            error_message = f"Database connection failed: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.close()
+
+        fields_coordinates = [(1100, 230), (1100, 380), (1100, 480), (1100, 580)]
+        info_fields = []
+
+        for i, (x, y) in enumerate(fields_coordinates):
+            field = QLineEdit(self)
+            if i == 0:  # For the first field
+                field.setGeometry(x, y, 760, 100) 
+                font = QFont("Montserrat", 30)
+            else:
+                field.setGeometry(x, y, 500, 50) 
+                font = QFont("Montserrat", 14)
+            field.setFont(font)
+            field.setReadOnly(True)
+            field.setStyleSheet("background-color: #0077B6; color: white; border: 2px solid white; border-radius: 7px;")
+            info_fields.append(field)
+        self.fetch_data(info_fields)
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+    def fetch_data(self, info_fields):
+        try:
+            query = "SELECT name, city, phone_no, email_id FROM user WHERE username = '" + self.username + "'"
+            self.cursor.execute(query)
+            data = self.cursor.fetchone()
+
+            if data:
+                for field, value in zip(info_fields, data):
+                    field.setText(str(value))
+            else:
+                QMessageBox.warning(self, "Information", "No profile information found.")
+        except mysql.connector.Error as err:
+            error_message = f"Error fetching data: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+
+class NGOWindow(QDialog):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        self.setWindowTitle("NGO Window")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, 1900, 970)
+        self.background_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900, 970))
+
+        button_1 = QPushButton("Recieve", self)
+        button_2 = QPushButton("Notifications", self)
+        button_3 = QPushButton("View Profile", self)
+        button_4 = QPushButton("View Restaurants", self)
+        button_5 = QPushButton("Community", self)
+        button_6 = QPushButton("Logout", self)
+
+        button_1.setGeometry(790, 130, 200, 150)
+        button_2.setGeometry(790, 350, 200, 150)
+        button_3.setGeometry(790, 570, 200, 150)
+        button_4.setGeometry(1080, 130, 200, 150)
+        button_5.setGeometry(1080, 350, 200, 150)
+        button_6.setGeometry(1080, 570, 200, 150)
+
+        for button in [button_1, button_2, button_3, button_4, button_5, button_6]:
+            button.setStyleSheet("background-color:white; color: black; border: 1px solid black; border-radius: 14px;")
+            button.setFont(QFont("Montserrat", 12))
+
+        button_6.clicked.connect(self.back_to_main)
+        button_4.clicked.connect(self.show_restaurant_list)
+        button_3.clicked.connect(self.showngo)
+
+    def show_restaurant_list(self):
+        restaurant_list_window = RestaurantListWindow()
+        restaurant_list_window.exec_()
+
+    def showngo(self):
+        ngoprofile = showngo(username)
+        ngoprofile.exec_()
+
+    def back_to_main(self):
+        self.close()
+        self.main_window.show()
+
+class showind(QDialog):
+    def __init__(self, username):
+        super().__init__()
+        self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6853.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, self.width(), self.height())
+
+        try:
+            self.db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+            self.cursor = self.db.cursor()
+        except mysql.connector.Error as err:
+            error_message = f"Database connection failed: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.close()
+
+        fields_coordinates = [(1100, 230), (1100, 380), (1100, 480), (1100, 580)]
+        info_fields = []
+
+        for i, (x, y) in enumerate(fields_coordinates):
+            field = QLineEdit(self)
+            if i == 0:  # For the first field
+                field.setGeometry(x, y, 760, 100) 
+                font = QFont("Montserrat", 30)
+            else:
+                field.setGeometry(x, y, 500, 50) 
+                font = QFont("Montserrat", 14)
+            field.setFont(font)
+            field.setReadOnly(True)
+            field.setStyleSheet("background-color: #0077B6; color: white; border: 2px solid white; border-radius: 7px;")
+            info_fields.append(field)
+        self.fetch_data(info_fields)
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+    def fetch_data(self, info_fields):
+        try:
+            query = "SELECT name, city, phone_no, email_id FROM user WHERE username = '" + self.username + "'"
+            self.cursor.execute(query)
+            data = self.cursor.fetchone()
+
+            if data:
+                for field, value in zip(info_fields, data):
+                    field.setText(str(value))
+            else:
+                QMessageBox.warning(self, "Information", "No profile information found.")
+        except mysql.connector.Error as err:
+            error_message = f"Error fetching data: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+
+class IndividualWindow(QDialog):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        self.setWindowTitle("Individual Window")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, 1900, 970)
+        self.background_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900, 970))
+
+        button_1 = QPushButton("Donate", self)
+        button_4 = QPushButton("Community", self)
+        button_2 = QPushButton("View NGO", self)
+        button_3 = QPushButton("View Profile", self)
+        button_5 = QPushButton("View Restaurant", self)
+        button_6 = QPushButton("Logout", self)
+
+        button_1.setGeometry(790, 130, 200, 150)
+        button_2.setGeometry(790, 350, 200, 150)
+        button_3.setGeometry(790, 570, 200, 150)
+        button_4.setGeometry(1080, 130, 200, 150)
+        button_5.setGeometry(1080, 350, 200, 150)
+        button_6.setGeometry(1080, 570, 200, 150)
+
+        for button in [button_1, button_2, button_3, button_4, button_5, button_6]:
+            button.setStyleSheet("background-color: white; color: black; border: 1px solid black; border-radius: 14px;")
+            button.setFont(QFont("Montserrat", 12))
+
+        button_6.clicked.connect(self.back_to_main)
+        button_5.clicked.connect(self.show_restaurant_list)
+        button_2.clicked.connect(self.show_ngo_list)
+        button_3.clicked.connect(self.showind)
+        button_4.clicked.connect(self.communitypage)
+
+    def communitypage(self):
+        com = community()
+        com.exec_()
+
+    def show_restaurant_list(self):
+        restaurant_list_window = RestaurantListWindow()
+        restaurant_list_window.exec_()
+
+    def showind(self):
+        indprofile = showind(username)
+        indprofile.exec_()
+
+    def show_ngo_list(self):
+        restaurant_list_window = NGOListWindow()
+        restaurant_list_window.exec_()
+
+    def back_to_main(self):
+        self.close()
+        self.main_window.show()
+
+class community(QDialog):
+    def __init__(self):
+        super().__init__()
+        # self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6851.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, self.width(), self.height())
+
+class showrest(QDialog):
+    def __init__(self, username):
+        super().__init__()
+        self.username = username
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle("View Profile")
+        self.setGeometry(0, 0, 1900, 970)
+        background_label = QLabel(self)
+        pixmap = QPixmap(r"C:\Users\Hp\Downloads\IMG_6851.JPEG.jpg")
+        background_label.setPixmap(pixmap.scaled(self.size()))
+        background_label.setGeometry(0, 0, self.width(), self.height())
+
+        try:
+            self.db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+            self.cursor = self.db.cursor()
+        except mysql.connector.Error as err:
+            error_message = f"Database connection failed: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+            self.close()
+
+        fields_coordinates = [(1100, 230), (1100, 380), (1100, 480), (1100, 580)]
+        info_fields = []
+
+        for i, (x, y) in enumerate(fields_coordinates):
+            field = QLineEdit(self)
+            if i == 0:  # For the first field
+                field.setGeometry(x, y, 760, 100) 
+                font = QFont("Montserrat", 30)
+            else:
+                field.setGeometry(x, y, 500, 50) 
+                font = QFont("Montserrat", 14)
+            field.setFont(font)
+            field.setReadOnly(True)
+            field.setStyleSheet("background-color: #0077B6; color: white; border: 2px solid white; border-radius: 7px;")
+            info_fields.append(field)
+        self.fetch_data(info_fields)
+
+        close_button = QPushButton("Close", self)
+        close_button.setFont(QFont("Montserrat", 14))
+        close_button.clicked.connect(self.close)
+        close_button.setGeometry(1680, 875, 200, 75)
+
+    def fetch_data(self, info_fields):
+        try:
+            query = "SELECT name, city, phone_no, email_id FROM user WHERE username = '" + self.username + "'"
+            self.cursor.execute(query)
+            data = self.cursor.fetchone()
+
+            if data:
+                for field, value in zip(info_fields, data):
+                    field.setText(str(value))
+            else:
+                QMessageBox.warning(self, "Information", "No profile information found.")
+        except mysql.connector.Error as err:
+            error_message = f"Error fetching data: {err}"
+            QMessageBox.critical(self, "Error", error_message)
+
+class RestaurantWindow(QDialog):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        self.setWindowTitle("Restaurant Window")
+        self.setGeometry(0, 0, 1900, 970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = QLabel(self)
+        self.background_label.setGeometry(0, 0, 1900, 970)
+        self.background_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900, 970))
+
+        button_1 = QPushButton("Donate", self)
+        button_2 = QPushButton("Notifications", self)
+        button_3 = QPushButton("View Profile", self)
+        button_4 = QPushButton("View NGO", self)
+        button_5 = QPushButton("Community", self)
+        button_6 = QPushButton("Logout", self)
+
+        button_1.setGeometry(790, 130, 200, 150)
+        button_2.setGeometry(790, 350, 200, 150)
+        button_3.setGeometry(790, 570, 200, 150)
+        button_4.setGeometry(1080, 130, 200, 150)
+        button_5.setGeometry(1080, 350, 200, 150)
+        button_6.setGeometry(1080, 570, 200, 150)
+
+        for button in [button_1, button_2, button_3, button_4, button_5, button_6]:
+            button.setStyleSheet("background-color: white; color: black; border: 1px solid black; border-radius: 14px;")
+            button.setFont(QFont("Montserrat", 12))
+
+        button_6.clicked.connect(self.back_to_main)
+        button_4.clicked.connect(self.show_ngo_list)
+        button_3.clicked.connect(self.showrest)
+
+    def show_ngo_list(self):
+        ngo_list_window = NGOListWindow()
+        ngo_list_window.exec_()
+
+    def showrest(self):
+        restprofile = showrest(username)
+        restprofile.exec_()
+
+    def back_to_main(self):
+        self.close()
+        self.main_window.show()
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Food Donation App")
+        self.setGeometry(0,0,1900,970)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.bg_label = QLabel(self)
+        self.bg_label.setGeometry(0, 0, 1900,970)
+        self.bg_label.setPixmap(QPixmap(r"C:\Users\Hp\Downloads\wallpaperflare.com_wallpaper.jpg").scaled(1900,970))
+
+        self.headline_label = QLabel("Food Donation App", self)
+        self.headline_label.setGeometry(50, 200, 1900, 110)
+        self.headline_label.setFont(QFont("Montserrat", 100))
+        self.headline_label.setAlignment(Qt.AlignCenter)
+        self.headline_label.setStyleSheet("font-size: 60pt; font-weight: bold; color: white")
+
+        self.label_username = QLabel("Username:", self)
+        self.label_username.setGeometry(700, 625-250, 150, 30)
+        self.label_username.setStyleSheet("font-size: 14pt; color: white")
+        self.label_username.setFont(QFont("Montserrat", 14))
+        self.entry_username = QLineEdit(self)
+        self.entry_username.setGeometry(900, 625-250, 300, 30)
+        self.entry_username.setFont(QFont("Montserrat", 14))
+        self.entry_username.setStyleSheet("font-size: 10pt; padding: 3px;")
+        
+        self.label_password = QLabel("Password:", self)
+        self.label_password.setGeometry(700, 625-180, 150, 30)
+        self.label_password.setStyleSheet("font-size: 14pt; color: white")
+        self.label_password.setFont(QFont("Montserrat", 14))
+        self.entry_password = QLineEdit(self)
+        self.entry_password.setGeometry(900, 625-180, 300, 30)
+        self.entry_password.setFont(QFont("Montserrat", 14))
+        self.entry_password.setStyleSheet("font-size: 10pt; padding: 3px;")
+        self.entry_password.setEchoMode(QLineEdit.Password)
+        self.entry_password.returnPressed.connect(self.validate_login)
+        
+        self.button_login = QPushButton("Login", self)
+        self.button_login.setGeometry(900, 625-110, 300, 30)
+        self.button_login.setStyleSheet("font-size: 14pt; background-color: #1E90FF; color: white; border: none;")
+        self.button_login.setIcon(QIcon("login_icon.png"))
+        self.button_login.clicked.connect(self.validate_login)
+
+        self.button_register = QPushButton("Don't have an account? Register", self)
+        self.button_register.setGeometry(1570, 900, 300, 30)
+        self.button_register.setStyleSheet("font-size: 12pt; color: #1E90FF; background-color: white; border:#1E90FF")
+        self.button_register.clicked.connect(self.open_register_window)
+
+    def open_register_window(self):
+        self.hide()
+        self.register_window = RegisterWindow(self)
+        self.register_window.show()
+
+    def validate_login(self):
+        entered_username = self.entry_username.text()
+        entered_password = self.entry_password.text()
+        
+        try:
+            db = mysql.connector.connect(
+                host="localhost",
+                port=3306,
+                user="root",
+                password="Chunnilal@5",
+                database="pythonminiproject"
+            )
+
+            cursor = db.cursor()
+
+            query = "SELECT name, phone_no, email_id, city, user_type FROM user WHERE username=%s AND password=%s"
+
+            cursor.execute(query, (entered_username, entered_password))
+            user = cursor.fetchone()
+
+            if user:
+                global username 
+                username = entered_username
+                name, phone_no, email_id, city, user_type = user
+                if user_type == "Restaurant":
+                    self.restaurant_window = RestaurantWindow(self)
+                    self.restaurant_window.show()
+                    self.hide()  
+                elif user_type == "Individual":
+                    self.individual_window = IndividualWindow(self)
+                    self.individual_window.show()
+                    self.hide() 
+                elif user_type == "NGO":
+                    self.ngo_window = NGOWindow(self)
+                    self.ngo_window.show()
+                    self.hide()  
+            else:
+                QMessageBox.critical(self, "Login Failed", "Invalid username or password")
+
+            cursor.close()
+            db.close()
+            
+        except mysql.connector.Error as error:
+            QMessageBox.critical(self, "Error", "Error connecting to MySQL server: " + str(error))
+        except Exception as e:
+            QMessageBox.critical(self, "Error", "An unexpected error occurred: " + str(e))
+            print("Unexpected error:", e)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
